@@ -7,11 +7,11 @@ public class Weapon : MonoBehaviour
     [Header("Weapon")]
     public Transform shootPoint;
     public float range = 100f;
-    public int magazin = 31;
+    public int magazin = 3;
     public float fireRate = 0.5f;
     public float damage = 20f;
     [SerializeField] private int _BulletsInMagazin;
-    public int bulletsleft = 200;
+    public int bulletsleft = 1;
     public KeyCode reloadKey;
 
     public enum ShootMode {Auto, Semi};
@@ -21,6 +21,11 @@ public class Weapon : MonoBehaviour
     public GameObject hitParticles;
     public GameObject bulletImpact;
 
+    [Header("Aiming")]
+    private Vector3 originalPosition;
+    public Vector3 amingPosition;
+    public float aodSpeed = 8f;
+
     [Header("Animation")]
     public ParticleSystem muzzleFlash;
     public ParticleSystem SparksEmitter;
@@ -28,14 +33,17 @@ public class Weapon : MonoBehaviour
 
     [Header("Sound")]
     public AudioClip shootSound;
+    public AudioClip emptyMagazinSound;
 
     private Animator anim;
     private bool shootInput;
+    private bool isReloading = false;
     private AudioSource _AudioSource;
     float fireTimer; // Temps entre les clicks gauche de la souris
 
     void Start()
     {
+        originalPosition = transform.localPosition;
         anim = GetComponent<Animator>();
         _AudioSource = GetComponent<AudioSource>();
         _BulletsInMagazin = magazin;
@@ -53,15 +61,14 @@ public class Weapon : MonoBehaviour
             break;
         }
 
-        if (shootInput) 
-        {
-            if (_BulletsInMagazin > 0) fire();
-        }
+        if (shootInput) fire();
 
         if (Input.GetKeyDown(reloadKey)) Reload();
         
         if (fireTimer < fireRate) 
             fireTimer += Time.deltaTime;
+
+        AimDownSights();
     }
 
 
@@ -70,18 +77,30 @@ public class Weapon : MonoBehaviour
         AnimatorStateInfo info = anim.GetCurrentAnimatorStateInfo(0);
     }
 
+    private void AimDownSights()
+    {
+        if (Input.GetButton("Fire2") && !isReloading)
+            transform.localPosition = Vector3.Lerp(transform.localPosition, amingPosition, Time.deltaTime * aodSpeed);
+        else
+            transform.localPosition = Vector3.Lerp(transform.localPosition, originalPosition, Time.deltaTime * aodSpeed);
+    }
+
     public void fire()
     {
-        if (fireTimer < fireRate || _BulletsInMagazin <= 0) return;
+        if (fireTimer < fireRate) return;
+        fireTimer = 0.0f; // Réinitialisation du le temps de tir
+        if (_BulletsInMagazin <= 0)
+        {
+            PlaySound(emptyMagazinSound, 0.5f);
+            return;
+        } 
         RaycastHit hit;
         if (Physics.Raycast(shootPoint.position, shootPoint.transform.forward, out hit, range))
         {
             Debug.Log(hit.transform.name + " hit");
             GameObject hitParticleEffect = Instantiate(hitParticles, hit.point, Quaternion.FromToRotation(Vector3.up, hit.normal));
-            hitParticleEffect.transform.SetParent(hit.transform);
 
             GameObject bulletHole = Instantiate(bulletImpact, hit.point, Quaternion.FromToRotation(Vector3.forward, hit.normal));
-            bulletHole.transform.SetParent(hit.transform);
 
             Destroy(hitParticleEffect, 1f);
             Destroy(bulletImpact, 1f);
@@ -94,9 +113,8 @@ public class Weapon : MonoBehaviour
         muzzleFlash.Play();
         SparksEmitter.Play();
         SparksEmitter_1.Play();
-        PlayShootSound();
+        PlaySound(shootSound, 1f);
         _BulletsInMagazin--;
-        fireTimer = 0.0f;   
     }
 
     private void Reload()
@@ -108,9 +126,10 @@ public class Weapon : MonoBehaviour
         _BulletsInMagazin += bulletToDeduct;
     }
 
-    private void PlayShootSound()
+    private void PlaySound(AudioClip sound, float volume)
     {
-        _AudioSource.clip = shootSound;
+        _AudioSource.clip = sound;
+        _AudioSource.volume = volume;
         _AudioSource.Play();
     }
 }
