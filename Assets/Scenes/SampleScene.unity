@@ -771,7 +771,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 705507993}
   m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalPosition: {x: 2.18, y: 8.18, z: -3.77}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -22703,10 +22703,16 @@ MonoBehaviour:
   range: 100
   magazin: 31
   fireRate: 0.5
+  _BulletsInMagazin: 0
+  bulletsleft: 200
+  reloadKey: 114
+  shootingMode: 0
+  hitParticles: {fileID: 8500247577252458025, guid: c7b0ffe8fe565bc49bec453bf0813522, type: 3}
+  bulletImpact: {fileID: 3983964306654531483, guid: 9db5eb4af5a946d4aa5ff1d22c6c7695, type: 3}
   muzzleFlash: {fileID: 2011224549359130787}
   SparksEmitter: {fileID: 6440186654961779799}
   SparksEmitter_1: {fileID: 6678957168096875103}
-  shootSound: {fileID: 0}
+  shootSound: {fileID: 8300000, guid: d79bebc90492a44499144f0e882d7a8d, type: 3}
 --- !u!4 &7141948123338135834
 Transform:
   m_ObjectHideFlags: 0
