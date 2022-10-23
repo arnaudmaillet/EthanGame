@@ -10,6 +10,9 @@ public class Weapon : MonoBehaviour
     public int magazin = 31;
     public float fireRate = 0.5f;
     float fireTimer; // Temps entre les clicks gauche de la souris
+    [SerializeField] private int _BulletsInMagazin;
+    public int bulletsleft = 200;
+    public KeyCode reloadKey;
 
     [Header("Animations")]
     public ParticleSystem muzzleFlash;
@@ -19,7 +22,6 @@ public class Weapon : MonoBehaviour
     [Header("Sound")]
     public AudioClip shootSound;
 
-    private int _BulletsInMagazin;
     private Animator anim;
     private AudioSource _AudioSource;
 
@@ -32,7 +34,13 @@ public class Weapon : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetButton("Fire1")) fire();
+        if (Input.GetButton("Fire1")) 
+        {
+            if (_BulletsInMagazin > 0) fire();
+        }
+
+        if (Input.GetKeyDown(reloadKey)) Reload();
+        
         if (fireTimer < fireRate) 
             fireTimer += Time.deltaTime;
     }
@@ -44,7 +52,7 @@ public class Weapon : MonoBehaviour
 
     public void fire()
     {
-        if (fireTimer < fireRate || magazin <= 0) return;
+        if (fireTimer < fireRate || _BulletsInMagazin <= 0) return;
         RaycastHit hit;
         if (Physics.Raycast(shootPoint.position, shootPoint.transform.forward, out hit, range))
         {
@@ -57,6 +65,15 @@ public class Weapon : MonoBehaviour
         PlayShootSound();
         _BulletsInMagazin--;
         fireTimer = 0.0f;   
+    }
+
+    private void Reload()
+    {
+        if (bulletsleft <= 0) return;
+        int bulletsToLoad = magazin - _BulletsInMagazin;
+        int bulletToDeduct = (bulletsleft >= bulletsToLoad) ? bulletsToLoad : bulletsleft;
+        bulletsleft -= bulletToDeduct;
+        _BulletsInMagazin += bulletToDeduct;
     }
 
     private void PlayShootSound()
