@@ -4,26 +4,47 @@ using UnityEngine;
 
 public class CameraMovement : MonoBehaviour
 {
-    public float sensitivity = 1000f;
-    public Transform Player;
-    float xRotation = 0f;
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        Cursor.lockState = CursorLockMode.Locked;
-    }
-
-    // Update is called once per frame
+    [SerializeField] float mouseSensitivity;
+    [SerializeField] Transform player, playerArms;
+    
+    float xAxisClamp = 0;
+    
     void Update()
     {
-        float mouseX = Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime;
-        float mouseY = Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime;
-
-        xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
-
-        transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
-        Player.Rotate(Vector3.up * mouseX);
+        Cursor.lockState = CursorLockMode.Locked;
+        RotateCamera();
+    }
+    
+    void RotateCamera()
+    {
+        float mouseX = Input.GetAxis("Mouse X");
+        float mouseY = Input.GetAxis("Mouse Y");
+        
+        float rotAmountX = mouseX * mouseSensitivity;
+        float rotAmountY = mouseY * mouseSensitivity;
+        
+        xAxisClamp -= rotAmountY;
+        
+        Vector3 rotPlayerArms = playerArms.transform.rotation.eulerAngles;
+        Vector3 rotPlayer = player.transform.rotation.eulerAngles;
+        
+        rotPlayerArms.x -= rotAmountY;
+        rotPlayerArms.z = 0;
+        rotPlayer.y += rotAmountX;
+        
+        if(xAxisClamp > 90)
+        {
+            xAxisClamp = 90;
+            rotPlayerArms.x = 90;
+        }
+        else if (xAxisClamp < -90)
+        {
+            xAxisClamp = -90;
+            rotPlayerArms.x = 270;
+        }
+            
+        playerArms.rotation = Quaternion.Euler(rotPlayerArms);
+        player.rotation = Quaternion.Euler (rotPlayer);
+        transform.rotation = Quaternion.Euler(rotPlayerArms);
     }
 }
